@@ -154,7 +154,6 @@ end
 local function Rw (t)
   assert(excluded:match(t))
   return t * space
---  return t * -alphanum * space
 end
 
 

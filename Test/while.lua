@@ -6,43 +6,30 @@ show_info = false
 --############################################################################
 
 source = [[
-function sub() {
-    return 11;
-}
 function main() {
-  return sub();
+  var i = 1;
+  while (i <= 1) {
+    i = i + 1;
+  };
+  return i;
 }
 ]]
 result = tinip.interpreter(source, show_info)
-assert(11 == result)
+assert(2 == result)
 
 
 source = [[
-function myfunc(k) {
-  return k * 3;
-}
 function main() {
-    var a = -1;
-    return myfunc(a);
+  var i = 1;
+  while (i <= 1000) {
+    i = i + 1;
+  };
+  return i;
 }
 ]]
 result = tinip.interpreter(source, show_info)
-assert(-3 == result)
+assert(1001 == result)
 
-
-source = [[
-function sub2() {
-    return 22;
-}
-function sub() {
-    return sub2();
-}
-function main() {
-  return sub();
-}
-]]
-result = tinip.interpreter(source, show_info)
-assert(22 == result)
 
 --############################################################################
 -- The execution of this script reached the end of the file.
