@@ -1,0 +1,35 @@
+name: Test the interpreter
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.png'
+      - '**.svg'
+      - '**.txt'
+      - '**.xml'
+
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.png'
+      - '**.svg'
+      - '**.txt'
+      - '**.xml'
+
+  workflow_dispatch:
+
+jobs:
+
+  test-job:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v3
+            
+      - name: Build Lua and LPeg then test
+        run: |
+          make
+          make test
