@@ -5,7 +5,7 @@ R= $V.6
 all: linux
 
 linux:
-	@cd src && $(MAKE) $@ && cd .. && cp ./src/lua ../..
+	cd src && $(MAKE) linux
 
 test clean:
 	@cd src && $(MAKE) $@

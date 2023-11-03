@@ -36,7 +36,7 @@ $(LUA_A): $(BASE_O)
 	$(RANLIB) $@
 
 $(LUA_T): $(LUA_O) $(LUA_A)
-	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS) && cp ./lua ../../../
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
@@ -51,8 +51,6 @@ depend:
 	@$(CC) $(CFLAGS) -MM l*.c
 
 ALL= all
-
-generic: $(ALL)
 
 linux:
 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl"
