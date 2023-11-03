@@ -5,7 +5,6 @@ show_info = false
 
 --############################################################################
 
---[=[
 source = [[
 function main() {
   return 0
@@ -22,18 +21,6 @@ function main() {
 ]]
 result = tinip.interpreter(source, show_info)
 assert(2 == result)
---]=]
-
-source = [[
-function main() {
-  print(k);
-  return 1;
-}
-]]
---result = tinip.interpreter(source, show_info)
-result = tinip.interpreter(source, true)
-print(result)
---assert(nil == result)
 
 --############################################################################
 -- The execution of this script reached the end of the file.

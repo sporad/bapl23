@@ -409,7 +409,6 @@ end
 function Compiler:codeCall (ast)
   local func = self.funcs[ast.fname]
   if not func then
-    -- tmpcode = ast.fname .. "(" .. args .. ")" 
     error("undefined function " .. ast.fname)
   end
   local args = ast.args
