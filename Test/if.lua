@@ -77,7 +77,6 @@ result = tinip.interpreter(source, show_info)
 assert(11 == result)
 
 
-
 source = [[
 function main() {
   var k = 1;
