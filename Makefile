@@ -1,8 +1,8 @@
 LUADIR=./luasrc/lua-5.4.6
 LPEGDIR=./luasrc/lpeg-1.1.0
 
-LUA=$(LUADIR)/src/lua
-LPEG=$(LPEGDIR)/lpeg.so
+LUA=lua
+LPEG=lpeg.so
 
 TESTS=$(wildcard Test/*.lua)
 

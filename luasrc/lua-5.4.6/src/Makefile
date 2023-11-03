@@ -45,7 +45,7 @@ test:
 	./$(LUA_T) -v
 
 clean:
-	$(RM) $(ALL_T) $(ALL_O)
+	$(RM) $(ALL_T) $(ALL_O) && $(RM) ../../../lua
 
 depend:
 	@$(CC) $(CFLAGS) -MM l*.c

@@ -32,7 +32,7 @@ linux:
 	$(MAKE) lpeg.so "DLLFLAGS = -shared -fPIC"
 
 lpeg.so: $(FILES)
-	env $(CC) $(DLLFLAGS) $(FILES) -o lpeg.so
+	env $(CC) $(DLLFLAGS) $(FILES) -o lpeg.so && cp lpeg.so ../..
 
 $(FILES): makefile
 
@@ -40,7 +40,7 @@ test: test.lua re.lua lpeg.so
 	$(LUA) ./test.lua
 
 clean:
-	rm -f $(FILES) lpeg.so
+	rm -f $(FILES) lpeg.so ../../lpeg.so
 
 lpcap.o: lpcap.c lpcap.h lptypes.h
 lpcode.o: lpcode.c lptypes.h lpcode.h lptree.h lpvm.h lpcap.h lpcset.h

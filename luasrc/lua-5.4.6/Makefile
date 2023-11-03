@@ -4,7 +4,10 @@ R= $V.6
 
 all: linux
 
-linux test clean:
+linux:
+	@cd src && $(MAKE) $@ && cd .. && cp ./src/lua ../..
+
+test clean:
 	@cd src && $(MAKE) $@
 
 .PHONY: all linux test clean
