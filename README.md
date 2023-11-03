@@ -1,5 +1,7 @@
 # Tinip - Tiny Interpreter in Lua with LPeg
 
+![GitHub Actions](https://github.com/sporad/bapl23/actions/workflows/ci.yml/badge.svg)
+
 November 2023
 
 Tinip* is a Lua implementation of a very simple interpreter
