@@ -24,7 +24,7 @@ Tinip is distributed with the same MIT license as the original code.
 - Lua 5.4.1
 - LPeg 1.1
 
-## The tinip language and program
+## The Tinip language and program
 
 Tinip program must have one `main` function.
 Tinip is implemented as a Lua module, `tinip.lua`,
@@ -86,7 +86,7 @@ of the error site in the source code.
 
 ## Testing
 
-Test file for the Tinip language are stored in `Test`.
+Test files for the Tinip language are stored in `Test`.
 They are implemented in Lua scripts using `assert`.
 
 Tinip implementation is automatically tested in GitHub using GitHub Actions.
@@ -109,6 +109,27 @@ make test
 ```
 
 To clean up build artifacts, run `make clean`.
+
+## Potential enhancements
+
+Language features
+
+- Support boolean; true, false.
+- Support string.
+- Support built-in functions, such as print.
+
+Program analysis
+
+- Find unused variables.
+- Find unused functions.
+  This may be ok if it is later used as a module to execute another program.
+
+Compilation
+
+- Compile a partial program, such as an expression, a statement, or a function.
+- Compilation of a partial program such as a statement
+  can be useful for debugging or learning purpose.
+- Save a compiled function to file and load it later for executing another program.
 
 ## References
 
