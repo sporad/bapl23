@@ -1,6 +1,8 @@
 -- Tinip, Tiny Interpreter
 --
 -- Copyright 2023 Sporadic Interlude, ihi.
+-- Original copyright goes to Classpert.
+--
 -- See LICENSE
 
 local lpeg = require "lpeg"
@@ -53,7 +55,7 @@ end
 -- The `node` function dynamically builds functions like below.
 -- While the `node` function can replace these functions,
 -- it hides what is actually being built.
--- The functions below may look unprofessional, but
+-- The functions below may look clumsy, but
 -- they are far easier to understand.
 
 -- number
@@ -93,7 +95,6 @@ local digit = lpeg.R("09")
 local alphanum = alpha + digit
 
 local comment = "#" * (lpeg.P(1) - "\n")^0
-
 
 local maxmatch = 0
 
@@ -160,9 +161,7 @@ end
 -- Additional operators
 -- + for addition
 -- - for subtraction
--- [isaac] Added comparison operators
 local opA = lpeg.C(lpeg.S"+-") * space
-  -- [isaac] Comparison operators
   + lpeg.C(lpeg.P"==") * space
   + lpeg.C(lpeg.P"~=") * space
   + lpeg.C(lpeg.P"<=") * space
@@ -346,9 +345,11 @@ local ops = {["+"] = "add", ["-"] = "sub",
 
 
 -- In instructions which compiler generates, variables in program source
--- are converted to numbers.
--- Numbers starting from 1 are assigned to variables as they appear
+-- appear just as numbers.
+-- This function assigns numbers starting from 1 to variables as they appear
 -- in the program source.
+-- For example, if the source has "var a; var b;" then
+-- a is 1 and b is 2 in the corresponding instructions.
 function Compiler:var2num (id)
   local num = self.vars[id]
   if not num then
@@ -460,19 +461,22 @@ end
 -- Build instructions for assignment
 function Compiler:codeAssgn (ast)
   local lhs = ast.lhs
+
   if lhs.tag == "variable" then
     -- Scalar variable
     self:codeExp(ast.exp)
     local idx = self:findLocal(lhs.var)
     if idx then
-      -- Assign in local var
+      -- Store data in the local memory area which will be a stack.
       self:addCode("storeL")
       self:addCode(idx)
     else
-      -- Assign in global var
+      -- Store data in the global memory area.
+      -- [TODO] Memory area can be separated into variables and constants.
       self:addCode("store")
       self:addCode(self:var2num(lhs.var))
     end
+
   elseif lhs.tag == "indexed" then
     -- Array variable
     self:codeExp(lhs.array)
@@ -540,7 +544,7 @@ function Compiler:codeStat (ast)
 end
 
 
--- Build instructions for function
+-- Build instructions for a function call
 function Compiler:codeFunction (ast)
   local code = {}
   self.funcs[ast.name] = {code = code, params = ast.params}
@@ -549,9 +553,17 @@ function Compiler:codeFunction (ast)
 
   self:codeStat(ast.body)
 
+  -- End the instructions for function call
+  -- with "push", 0, "ret".
+  -- This is used as an idiom to mark the end of function call.
   self:addCode("push")
   self:addCode(0)
   self:addCode("ret")
+
+  -- Store the number of local variables and function parameters
+  -- at the end of the instructions for a function.
+  -- This is used to properly adjust the VM's stack top
+  -- when returning from a function. Very important.
   self:addCode(#self.locals + #self.params)
 end
 
@@ -590,6 +602,16 @@ function run (code, mem, stack, top, print_info)
       io.write("\n", code[pc], "\n")
     end
     if code[pc] == "ret" then
+      -- Return from a function.
+      --
+      -- Funciton's parameters and local variables are
+      -- on the top of the stack.
+      -- We must remove those local variable
+      -- when returning from a function.
+      --
+      -- In the instructions array (`code`),
+      -- the "ret" directive is followed by an integer
+      -- indicating the number of local variables.
       local num_local_vars = code[pc + 1]    -- number of active local variables
       stack[top - num_local_vars] = stack[top]
       top = top - num_local_vars
@@ -629,11 +651,13 @@ function run (code, mem, stack, top, print_info)
       stack[base + num_local_vars] = stack[top]
       top = top - 1
     elseif code[pc] == "load" then
+      -- Load data from the global memory to the stack top.
       pc = pc + 1
       local id = code[pc]
       top = top + 1
       stack[top] = mem[id]
     elseif code[pc] == "store" then
+      -- Store a variable at the stack top to the global memory.
       pc = pc + 1
       local id = code[pc]
       mem[id] = stack[top]
