@@ -1,7 +1,7 @@
 -- Tinip, Tiny Interpreter
 --
 -- Copyright 2023 Sporadic Interlude, ihi.
--- Original copyright goes to Classpert.
+-- Original copyright by Classpert.
 --
 -- See LICENSE
 
@@ -502,24 +502,33 @@ end
 
 -- Build instructions for statement
 function Compiler:codeStat (ast)
+
   if ast.tag == "assgn" then
     self:codeAssgn(ast)
+
   elseif ast.tag == "local" then
     self:codeExp(ast.init)
     self.locals[#self.locals + 1] = ast.name
+
   elseif ast.tag == "call" then
     self:codeCall(ast)
+    -- Remove the result of function call from stack top
+    -- because this is statement.
     self:addCode("pop")
     self:addCode(1)
+
   elseif ast.tag == "block" then
     self:codeBlock(ast)
+
   elseif ast.tag == "seq" then
     self:codeStat(ast.stmt1)
     self:codeStat(ast.stmt2)
+
   elseif ast.tag == "ret" then
     self:codeExp(ast.exp)
     self:addCode("ret")
     self:addCode(#self.locals + #self.params)
+
   elseif ast.tag == "while1" then
     local ilabel = self:currentPosition()
     self:codeExp(ast.cond)
@@ -527,18 +536,62 @@ function Compiler:codeStat (ast)
     self:codeStat(ast.body)
     self:codeJmpB("jmp", ilabel)
     self:fixJmp2here(jmp)
+
   elseif ast.tag == "if1" then
+    -- Condition expression.
     self:codeExp(ast.cond)
-    local jmp = self:codeJmpF("jmpZ")
+
+    -- Now add a conditional jump instruction, jmpZ (jump zero).
+    -- If the above condition was true,
+    -- the instruction right after jmpZ is skipped.
+    -- If false, it is executed, and it contains the position to jump to skip the "then" block.
+    self:addCode("jmpZ")  -- jump zero is conditional jump.
+
+    -- Add an instruction: code[current_position] = 0
+    self:addCode(0)
+    -- The value zero here is temporary and must be updated later with
+    -- the program position to jump to if the condition was false.
+    -- Right now, the position to jump to is unknown because
+    -- we still don't know the instructions for the "then" block yet.
+
+    -- Remember the current position.
+    -- We will update the instruction `code[pos1]` after
+    -- all the instructions for the "then" block are added.
+    local pos1 = self:currentPosition()
+
+    -- Instructions for the "then" block.
     self:codeStat(ast.th)
+
     if ast.el == nil then
-      self:fixJmp2here(jmp)
+      -- There is no "else" block.
+      -- The position to jump from pos1 is here.
+      self.code[pos1] = self:currentPosition()
+
     else
-      local jmp2 = self:codeJmpF("jmp")
-      self:fixJmp2here(jmp)
+      -- There is "else" block.
+
+      -- Unconditional jump to skip the "else" block.
+      -- Execution comes here only when the "then" block was executed.
+      self:addCode("jmp")
+
+      -- Similar to the conditional jump (jmpZ) before,
+      -- 0 is set to code[current_position] for now.
+      self:addCode(0)
+      local pos2 = self:currentPosition()
+    
+      -- Here is the position to jump from pos1
+      -- if the "then" block was skipped.
+      -- This position must come after the unconditional jump.
+      self.code[pos1] = self:currentPosition()
+
+      -- Instructions for the "else" block.
       self:codeStat(ast.el)
-      self:fixJmp2here(jmp2)
+
+      -- Here is the position we want to jump from pos2
+      -- to skip the "else" block.
+      self.code[pos2] = self:currentPosition()
     end
+
   else error("invalid tree")
   end
 end
@@ -616,10 +669,14 @@ function run (code, mem, stack, top, print_info)
       stack[top - num_local_vars] = stack[top]
       top = top - num_local_vars
       return top
+
     elseif code[pc] == "call" then
+      -- Call a function
       pc = pc + 1
       local code = code[pc]
+      -- Recursive call of run()
       top = run(code, mem, stack, top)
+
     elseif code[pc] == "pop" then
       pc = pc + 1
       top = top - code[pc]
@@ -676,15 +733,20 @@ function run (code, mem, stack, top, print_info)
       local value = stack[top]
       array[index] = value
       top = top - 3
+
     elseif code[pc] == "jmp" then
+      -- Unconditional jump
       pc = code[pc + 1]
+
     elseif code[pc] == "jmpZ" then
-      -- Jump if zero ... Jump if stack top is 0 or nil
+      -- Jump zero ... Conditional jump ... jump if previous condition was zero.
+      -- Video: week 5, lecture 5.
       pc = pc + 1
       if stack[top] == 0 or stack[top] == nil then
         pc = code[pc]
       end
       top = top - 1
+
     -- [isaac] Added
     elseif code[pc] == "eq" then
       if stack[top - 1] == stack[top] then
